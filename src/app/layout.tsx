@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { BRAND } from "@/lib/constants";
 import { PrivyProviders } from "@/components/providers/PrivyProviders";
+import { SyncedUserProvider } from "@/components/providers/SyncedUserProvider";
 import { StubBanner } from "@/components/dev/StubBanner";
 import "./globals.css";
 
@@ -32,7 +33,9 @@ export default function RootLayout({
     >
       <body className="min-h-full flex flex-col bg-background text-foreground">
         <StubBanner />
-        <PrivyProviders>{children}</PrivyProviders>
+        <PrivyProviders>
+          <SyncedUserProvider>{children}</SyncedUserProvider>
+        </PrivyProviders>
       </body>
     </html>
   );

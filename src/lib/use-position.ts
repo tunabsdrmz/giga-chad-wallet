@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSyncedUser } from "@/lib/use-synced-user";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase/client";
 import { type Position } from "@/lib/mock/market";
@@ -20,6 +20,8 @@ interface RemoteFetch {
   position: Position | null;
 }
 
+const inflightFetches = new Map<string, Promise<Position | null>>();
+
 /**
  * Position for `token` belonging to the current Privy user.
  *
@@ -34,38 +36,58 @@ export function usePosition(token: Token): PositionState {
 
   const [fetched, setFetched] = useState<RemoteFetch>({ key: null, position: null });
   const [submitting, setSubmitting] = useState(false);
+  const tokenRef = useRef(token);
+  tokenRef.current = token;
 
   useEffect(() => {
     if (!useRemote || !did) return;
     let cancelled = false;
-    (async () => {
-      try {
-        const { data, error } = await getSupabase()
-          .from("positions")
-          .select("amount, avg_entry_usd")
-          .eq("user_did", did)
-          .eq("mint", token.mint)
-          .maybeSingle();
-        if (cancelled) return;
-        if (error) {
-          console.warn("[supabase] position fetch failed", error);
-          setFetched({ key: remoteKey, position: null });
-          return;
-        }
-        setFetched({
-          key: remoteKey,
-          position: data ? toPosition(token, data.amount, data.avg_entry_usd) : null,
+
+    const load = async () => {
+      let request = inflightFetches.get(remoteKey);
+      if (!request) {
+        request = (async () => {
+          const { data, error } = await getSupabase()
+            .from("positions")
+            .select("amount, avg_entry_usd")
+            .eq("user_did", did)
+            .eq("mint", tokenRef.current.mint)
+            .maybeSingle();
+          if (error) {
+            console.warn("[supabase] position fetch failed", error);
+            return null;
+          }
+          return data
+            ? toPosition(
+                tokenRef.current,
+                data.amount,
+                data.avg_entry_usd,
+              )
+            : null;
+        })();
+        inflightFetches.set(remoteKey, request);
+        void request.finally(() => {
+          if (inflightFetches.get(remoteKey) === request) {
+            inflightFetches.delete(remoteKey);
+          }
         });
+      }
+
+      try {
+        const position = await request;
+        if (cancelled) return;
+        setFetched({ key: remoteKey, position });
       } catch (err) {
         if (!cancelled) console.warn("[supabase] position fetch threw", err);
       }
-    })();
+    };
+
+    void load();
     return () => {
       cancelled = true;
     };
-  }, [useRemote, did, token, remoteKey]);
+  }, [useRemote, did, token.mint, remoteKey]);
 
-  // Local/demo mode: mark fetch complete with an empty position.
   useEffect(() => {
     if (useRemote) return;
     setFetched({ key: remoteKey, position: null });
@@ -104,6 +126,7 @@ export function usePosition(token: Token): PositionState {
               return false;
             }
           }
+          inflightFetches.delete(remoteKey);
           setFetched({ key: remoteKey, position: next });
           return true;
         } finally {
@@ -122,9 +145,9 @@ export function usePosition(token: Token): PositionState {
 
   const openPosition = useCallback(
     async (amount: number, avgPriceUsd: number) => {
-      return persist(toPosition(token, amount, avgPriceUsd));
+      return persist(toPosition(tokenRef.current, amount, avgPriceUsd));
     },
-    [persist, token],
+    [persist],
   );
 
   const loading = fetched.key !== remoteKey;

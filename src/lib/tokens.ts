@@ -1,5 +1,6 @@
 import "server-only";
 
+import { cache } from "react";
 import type { Token } from "@/types/token";
 import { isBirdEyeConfigured } from "@/lib/birdeye/client";
 import { fetchTrending } from "@/lib/birdeye/trending";
@@ -9,9 +10,10 @@ import { MOCK_TOKENS } from "@/lib/mock/tokens";
 /**
  * Tokens used by the trending list. Hits BirdEye when configured; if
  * the call fails (network, rate limit) we fall back to the mock list
- * so the UI never breaks.
+ * so the UI never breaks. Deduped per request and backed by a shared
+ * 2-minute BirdEye cache (see `birdeye/trending.ts`).
  */
-export async function getTrending(limit = 20): Promise<Token[]> {
+export const getTrending = cache(async function getTrending(limit = 20): Promise<Token[]> {
   if (!isBirdEyeConfigured) return mockTrending(limit);
   try {
     const tokens = await fetchTrending(limit);
@@ -20,26 +22,42 @@ export async function getTrending(limit = 20): Promise<Token[]> {
     console.warn("[tokens] BirdEye trending failed, using mocks:", errMessage(err));
     return mockTrending(limit);
   }
-}
+});
 
 /**
- * Detail for a single mint. Returns null if BirdEye doesn't know the
- * token *and* it isn't in our mock list — in that case the trade page
- * should 404.
+ * Detail for a single mint. Uses the trending pool or mock catalog when
+ * possible so we don't burn an overview request on every trade page
+ * load. Overview (cached 5 min) runs only for deep-linked mints outside
+ * the trending pool.
  */
-export async function getTokenByMint(mint: string): Promise<Token | null> {
+export async function getTokenByMint(
+  mint: string,
+  hints: Token[] = [],
+): Promise<Token | null> {
+  const fallback =
+    hints.find((t) => t.mint === mint) ??
+    MOCK_TOKENS.find((t) => t.mint === mint) ??
+    null;
+
+  if (fallback) return fallback;
+
   if (isBirdEyeConfigured) {
     try {
-      const t = await fetchTokenOverview(mint);
-      if (t) return t;
+      return await fetchTokenOverview(mint);
     } catch (err) {
       console.warn(
-        `[tokens] BirdEye overview failed for ${mint}, using mock:`,
+        `[tokens] BirdEye overview failed for ${mint}:`,
         errMessage(err),
       );
     }
   }
-  return MOCK_TOKENS.find((t) => t.mint === mint) ?? null;
+
+  return null;
+}
+
+/** Safe default when `/trade` needs a redirect target. */
+export function getDefaultMint(): string {
+  return MOCK_TOKENS[0]!.mint;
 }
 
 /**

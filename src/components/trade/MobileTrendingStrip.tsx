@@ -1,8 +1,8 @@
 "use client";
 
-import Link from "next/link";
 import { TrendingDown, TrendingUp } from "lucide-react";
 import type { Token } from "@/types/token";
+import { TradeMintLink } from "@/components/trade/TradeMintLink";
 import { TokenAvatar } from "@/components/token/TokenAvatar";
 import { formatPercent } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -32,9 +32,9 @@ export function MobileTrendingStrip({
           const up = token.change24h >= 0;
           const active = token.mint === activeMint;
           return (
-            <Link
+            <TradeMintLink
               key={token.mint}
-              href={`/trade/${token.mint}`}
+              mint={token.mint}
               className={cn(
                 "flex shrink-0 items-center gap-2 rounded-full border px-2.5 py-1.5 text-xs transition-colors",
                 active
@@ -58,7 +58,7 @@ export function MobileTrendingStrip({
                 {up ? <TrendingUp size={10} /> : <TrendingDown size={10} />}
                 {formatPercent(token.change24h)}
               </span>
-            </Link>
+            </TradeMintLink>
           );
         })}
       </div>

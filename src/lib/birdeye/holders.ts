@@ -1,30 +1,20 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
 import type { Holder } from "@/types/token";
 import { birdeyeFetch } from "@/lib/birdeye/client";
+import { BIRDEYE_CACHE } from "@/lib/birdeye/cache-config";
+import { withStaleFallback } from "@/lib/birdeye/stale-store";
 import type { BirdEyeHoldersPayload } from "@/lib/birdeye/types";
 
 interface FetchHoldersOptions {
-  /** Token mint to look up. */
   mint: string;
-  /** Max rows to return (BirdEye max is 100 on Standard). */
   limit?: number;
-  /** Current token price in USD; used to compute USD value per holder. */
   priceUsd?: number;
-  /**
-   * Token market cap in USD. Used to derive the "% of supply" column
-   * since BirdEye's v3 holder endpoint doesn't return it directly
-   * (`percent = valueUsd / marketCap * 100`).
-   */
   marketCap?: number;
 }
 
-/**
- * Top holders for a mint. Note: BirdEye's holder endpoint returns the
- * **ui_amount** field which is already decimal-adjusted (i.e. raw
- * amount / 10^decimals), so we can multiply by price directly.
- */
-export async function fetchHolders({
+async function fetchHoldersLive({
   mint,
   limit = 20,
   priceUsd = 0,
@@ -33,7 +23,7 @@ export async function fetchHolders({
   const data = await birdeyeFetch<BirdEyeHoldersPayload>({
     path: "/defi/v3/token/holder",
     params: { address: mint, offset: 0, limit },
-    revalidate: 300,
+    noStore: true,
   });
 
   const items = data.items ?? [];
@@ -51,4 +41,24 @@ export async function fetchHolders({
       valueUsd,
     };
   });
+}
+
+/**
+ * Top holders for a mint. Cached per mint + pricing inputs — holder
+ * lists change slowly so we keep this TTL long.
+ */
+export async function fetchHolders(options: FetchHoldersOptions): Promise<Holder[]> {
+  const limit = options.limit ?? 20;
+  const priceUsd = options.priceUsd ?? 0;
+  const marketCap = options.marketCap ?? 0;
+  return unstable_cache(
+    (mint: string, rowLimit: number, price: number, mcap: number) =>
+      withStaleFallback(
+        `holders:${mint}:${rowLimit}:${price}:${mcap}`,
+        () => fetchHoldersLive({ mint, limit: rowLimit, priceUsd: price, marketCap: mcap }),
+        (rows) => rows.length === 0,
+      ),
+    ["birdeye-holders"],
+    { revalidate: BIRDEYE_CACHE.holders.revalidateSeconds, tags: ["birdeye-holders"] },
+  )(options.mint, limit, priceUsd, marketCap);
 }

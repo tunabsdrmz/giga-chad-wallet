@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { fetchRecentTrades } from "@/lib/birdeye/trades";
+import { BIRDEYE_HTTP_CACHE } from "@/lib/birdeye/cache-config";
 import { isBirdEyeConfigured } from "@/lib/birdeye/client";
 
 /**
@@ -19,7 +20,10 @@ export async function GET(
   const limit = Number(new URL(req.url).searchParams.get("limit") ?? 30);
   try {
     const trades = await fetchRecentTrades({ mint, limit });
-    return NextResponse.json({ trades });
+    return NextResponse.json(
+      { trades },
+      { headers: { "Cache-Control": BIRDEYE_HTTP_CACHE.trades } },
+    );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: message }, { status: 502 });

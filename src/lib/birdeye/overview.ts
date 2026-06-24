@@ -1,18 +1,17 @@
 import "server-only";
 
+import { unstable_cache } from "next/cache";
 import type { Token } from "@/types/token";
 import { birdeyeFetch } from "@/lib/birdeye/client";
+import { BIRDEYE_CACHE } from "@/lib/birdeye/cache-config";
+import { withStaleFallback } from "@/lib/birdeye/stale-store";
 import type { BirdEyeOverviewPayload } from "@/lib/birdeye/types";
 
-/**
- * Detailed info for a single mint. We use the `frames=24h` shape so we
- * get 24-hour price change and volume in one request.
- */
-export async function fetchTokenOverview(mint: string): Promise<Token | null> {
+async function fetchTokenOverviewLive(mint: string): Promise<Token | null> {
   const data = await birdeyeFetch<BirdEyeOverviewPayload>({
     path: "/defi/token_overview",
     params: { address: mint },
-    revalidate: 30,
+    noStore: true,
   });
 
   if (!data?.address) return null;
@@ -29,4 +28,24 @@ export async function fetchTokenOverview(mint: string): Promise<Token | null> {
     holders: data.holder ?? 0,
     liquidity: data.liquidity,
   };
+}
+
+/**
+ * Detailed info for a single mint. Cached per address — only used when
+ * the mint isn't already present in the trending pool.
+ */
+export async function fetchTokenOverview(mint: string): Promise<Token | null> {
+  return unstable_cache(
+    (address: string) =>
+      withStaleFallback(
+        `overview:${address}`,
+        () => fetchTokenOverviewLive(address),
+        (token) => token === null,
+      ),
+    ["birdeye-token-overview"],
+    {
+      revalidate: BIRDEYE_CACHE.overview.revalidateSeconds,
+      tags: ["birdeye-overview"],
+    },
+  )(mint);
 }

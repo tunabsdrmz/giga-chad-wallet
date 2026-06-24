@@ -1,9 +1,9 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import Link from "next/link";
 import { Search, TrendingDown, TrendingUp } from "lucide-react";
 import type { Token } from "@/types/token";
+import { TradeMintLink } from "@/components/trade/TradeMintLink";
 import { TokenAvatar } from "@/components/token/TokenAvatar";
 import { Input } from "@/components/ui/input";
 import { formatPrice, formatPercent, formatCompactUsd } from "@/lib/format";
@@ -72,8 +72,8 @@ export function TrendingList({
 function TrendingRow({ token, active }: { token: Token; active: boolean }) {
   const up = token.change24h >= 0;
   return (
-    <Link
-      href={`/trade/${token.mint}`}
+    <TradeMintLink
+      mint={token.mint}
       className={cn(
         "flex items-center gap-2.5 border-l-2 px-3 py-2 transition-colors",
         active
@@ -107,6 +107,6 @@ function TrendingRow({ token, active }: { token: Token; active: boolean }) {
           {formatPercent(token.change24h)}
         </div>
       </div>
-    </Link>
+    </TradeMintLink>
   );
 }

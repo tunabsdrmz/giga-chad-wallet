@@ -9,7 +9,8 @@ import { formatCompactUsd, formatAmount, formatAgo, shortenAddress } from "@/lib
 import { cn } from "@/lib/utils";
 
 const MAX_ROWS = 30;
-const POLL_INTERVAL_MS = 8_000;
+/** Matches server cache TTL — polling faster would only hit our proxy. */
+const POLL_INTERVAL_MS = 30_000;
 
 export function TradesTable({ token }: { token: Token }) {
   const [trades, setTrades] = useState<Trade[]>([]);
@@ -48,7 +49,7 @@ export function TradesTable({ token }: { token: Token }) {
       clearInterval(interval);
       clearInterval(tick);
     };
-  }, [token]);
+  }, [token.mint]);
 
   useEffect(() => {
     if (!usingMock) return;
@@ -56,7 +57,7 @@ export function TradesTable({ token }: { token: Token }) {
       setTrades((prev) => [randomTrade(token), ...prev].slice(0, MAX_ROWS));
     }, 3000);
     return () => clearInterval(id);
-  }, [usingMock, token]);
+  }, [usingMock, token.mint]);
 
   return (
     <div className="text-sm">

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { fetchHolders } from "@/lib/birdeye/holders";
+import { BIRDEYE_HTTP_CACHE } from "@/lib/birdeye/cache-config";
 import { isBirdEyeConfigured } from "@/lib/birdeye/client";
 
 /**
@@ -22,7 +23,10 @@ export async function GET(
   const marketCap = Number(sp.get("marketCap") ?? 0);
   try {
     const holders = await fetchHolders({ mint, priceUsd, marketCap });
-    return NextResponse.json({ holders });
+    return NextResponse.json(
+      { holders },
+      { headers: { "Cache-Control": BIRDEYE_HTTP_CACHE.holders } },
+    );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: message }, { status: 502 });

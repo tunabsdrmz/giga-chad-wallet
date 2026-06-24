@@ -29,6 +29,7 @@ export function AvatarImage({
       height={size}
       alt={alt}
       className="h-full w-full object-cover"
+      loading="lazy"
       onError={() => setFailed(true)}
       unoptimized
     />

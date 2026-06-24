@@ -6,6 +6,8 @@ Privy (Google + email OTP). Optional Supabase persistence powers profiles,
 watchlists, positions, and leaderboard data. Market data comes from BirdEye;
 on-chain SOL balances use Alchemy Devnet RPC.
 
+**Live demo:** [giga-chad-wallet.vercel.app](https://giga-chad-wallet.vercel.app/)
+
 ## What's included
 
 | Area | Route | Notes |
@@ -194,13 +196,17 @@ public/brand/                    # Logo, promo video, screenshots
 
 ## Deployment
 
-Not deployed yet. To ship a live preview on Vercel:
+Hosted on Vercel: [giga-chad-wallet.vercel.app](https://giga-chad-wallet.vercel.app/)
+
+To redeploy or fork to your own project:
 
 1. Push the repo to GitHub.
-2. Import the project in [vercel.com/new](https://vercel.com/new).
+2. Import the project in [vercel.com/new](https://vercel.com/new) (or connect an
+   existing repo).
 3. Add the same environment variables from `.env.local` in **Project
-   Settings → Environment Variables**.
-4. Deploy. `pnpm build` must pass locally first.
+   Settings → Environment Variables** (Production, Preview, and Development).
+4. Deploy. `pnpm build` must pass locally first. After changing env vars,
+   trigger a redeploy from the Vercel dashboard.
 
 BirdEye and Supabase keys stay server-side or in env vars — never commit
 `.env.local`.

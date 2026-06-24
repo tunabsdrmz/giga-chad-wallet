@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { fetchCandles, TIMEFRAME_MAP } from "@/lib/birdeye/ohlcv";
+import { BIRDEYE_HTTP_CACHE } from "@/lib/birdeye/cache-config";
 import { isBirdEyeConfigured } from "@/lib/birdeye/client";
 
 /**
@@ -28,7 +29,10 @@ export async function GET(
       mint,
       timeframe: tf as keyof typeof TIMEFRAME_MAP,
     });
-    return NextResponse.json({ candles });
+    return NextResponse.json(
+      { candles },
+      { headers: { "Cache-Control": BIRDEYE_HTTP_CACHE.ohlcv } },
+    );
   } catch (err) {
     const message = err instanceof Error ? err.message : String(err);
     return NextResponse.json({ error: message }, { status: 502 });

@@ -70,6 +70,8 @@ function getServerSnapshot(): readonly string[] {
 
 /* ---------- Hook ---------- */
 
+const watchlistFetchedDids = new Set<string>();
+
 /**
  * Watchlist persisted to localStorage. When the user is signed in and
  * Supabase is configured, the local list is unioned with their server
@@ -79,9 +81,12 @@ export function useWatchlist() {
   const list = useSyncExternalStore(subscribe, readSnapshot, getServerSnapshot);
   const { did, authenticated } = useSyncedUser();
 
-  // On sign-in, union the remote list into the local one.
+  // On sign-in, union the remote list into the local one (once per DID).
   useEffect(() => {
     if (!authenticated || !did || !isSupabaseConfigured) return;
+    if (watchlistFetchedDids.has(did)) return;
+    watchlistFetchedDids.add(did);
+
     let cancelled = false;
     (async () => {
       try {
@@ -92,6 +97,7 @@ export function useWatchlist() {
         if (cancelled) return;
         if (error) {
           console.warn("[supabase] watchlist fetch failed", error);
+          watchlistFetchedDids.delete(did);
           return;
         }
         const remote = (data ?? []).map((row) => row.mint);
@@ -100,6 +106,7 @@ export function useWatchlist() {
         const merged = Array.from(new Set([...current, ...remote]));
         if (merged.length !== current.length) writeSnapshot(merged);
       } catch (err) {
+        watchlistFetchedDids.delete(did);
         if (!cancelled) console.warn("[supabase] watchlist fetch threw", err);
       }
     })();

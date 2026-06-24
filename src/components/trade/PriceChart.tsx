@@ -59,7 +59,7 @@ export function PriceChart({ token }: { token: Token }) {
     return () => {
       cancelled = true;
     };
-  }, [token, timeframe]);
+  }, [token.mint, timeframe]);
 
   return (
     <div className="flex h-full w-full flex-col">

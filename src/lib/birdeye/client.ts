@@ -32,13 +32,19 @@ export interface BirdEyeFetchOptions {
    * @default 60
    */
   revalidate?: number;
+  /**
+   * Skip the Next.js fetch cache — use inside `unstable_cache` wrappers
+   * so only one cache layer revalidates at a time.
+   */
+  noStore?: boolean;
 }
 
 /* ----------------------------- Rate limiter ----------------------------- */
 // Free tier is 1 RPS. We enforce slightly less than that across all
 // concurrent requests in this process via a simple FIFO queue so a
 // burst of parallel page-component fetches doesn't trip 429s.
-const MIN_INTERVAL_MS = 1100;
+const MIN_INTERVAL_MS = 1200;
+const MAX_429_RETRIES = 3;
 let queueTail: Promise<void> = Promise.resolve();
 
 function scheduleSlot(): Promise<void> {
@@ -77,6 +83,7 @@ export async function birdeyeFetch<T>({
   params,
   chain = DEFAULT_CHAIN,
   revalidate = 60,
+  noStore = false,
 }: BirdEyeFetchOptions): Promise<T> {
   if (!isBirdEyeConfigured) {
     throw new BirdEyeError("BirdEye API key is not configured", 0, path);
@@ -89,7 +96,7 @@ export async function birdeyeFetch<T>({
     }
   }
 
-  return runOnce<T>(url.toString(), chain, revalidate, path, 0);
+  return runOnce<T>(url.toString(), chain, revalidate, path, 0, noStore);
 }
 
 async function runOnce<T>(
@@ -98,6 +105,7 @@ async function runOnce<T>(
   revalidate: number,
   path: string,
   attempt: number,
+  noStore: boolean,
 ): Promise<T> {
   await scheduleSlot();
 
@@ -107,13 +115,13 @@ async function runOnce<T>(
       "X-API-KEY": KEY,
       "x-chain": chain,
     },
-    next: { revalidate },
+    ...(noStore ? { cache: "no-store" as const } : { next: { revalidate } }),
   });
 
-  // Retry once on 429 after a 1.5s cool-down.
-  if (res.status === 429 && attempt < 1) {
-    await sleep(1500);
-    return runOnce<T>(url, chain, revalidate, path, attempt + 1);
+  // Back off on 429 — free tier is 1 rps and revalidation can collide.
+  if (res.status === 429 && attempt < MAX_429_RETRIES) {
+    await sleep(2000 * (attempt + 1));
+    return runOnce<T>(url, chain, revalidate, path, attempt + 1, noStore);
   }
 
   if (!res.ok) {
@@ -129,9 +137,9 @@ async function runOnce<T>(
     // "Too many requests" arrives as a 200 with success=false in some
     // BirdEye edge cases — same retry treatment.
     const msg = (json.message ?? "").toLowerCase();
-    if (msg.includes("too many requests") && attempt < 1) {
-      await sleep(1500);
-      return runOnce<T>(url, chain, revalidate, path, attempt + 1);
+    if (msg.includes("too many requests") && attempt < MAX_429_RETRIES) {
+      await sleep(2000 * (attempt + 1));
+      return runOnce<T>(url, chain, revalidate, path, attempt + 1, noStore);
     }
     throw new BirdEyeError(
       `BirdEye ${path} returned success=false: ${json.message ?? "no message"}`,
