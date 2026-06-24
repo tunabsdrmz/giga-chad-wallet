@@ -50,7 +50,7 @@ export function TrendingList({
         </div>
       </div>
 
-      <div className="flex-1 overflow-y-auto">
+      <div className="flex-1 overflow-y-auto w-full min-w-0">
         {filtered.length === 0 ? (
           <p className="px-3 py-6 text-center text-xs text-muted-foreground">
             No tokens match &ldquo;{query}&rdquo;
@@ -75,7 +75,7 @@ function TrendingRow({ token, active }: { token: Token; active: boolean }) {
     <TradeMintLink
       mint={token.mint}
       className={cn(
-        "flex items-center gap-2.5 border-l-2 px-3 py-2 transition-colors",
+        "flex w-full min-w-0 items-center gap-2.5 border-l-2 px-3 py-2 transition-colors",
         active
           ? "border-primary bg-primary/10"
           : "border-transparent hover:bg-white/4",

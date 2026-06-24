@@ -3,6 +3,13 @@
 import Link from "next/link";
 import type { ComponentProps, MouseEvent, ReactNode } from "react";
 import { useTradeMintNav } from "@/components/trade/TradeMintNav";
+import { cn } from "@/lib/utils";
+
+type TradeMintLinkProps = {
+  mint: string;
+  children?: ReactNode;
+  className?: string;
+} & Omit<ComponentProps<typeof Link>, "href" | "children" | "className">;
 
 /**
  * Trade route links opt out of Next.js prefetch. The trade terminal renders
@@ -16,18 +23,19 @@ export function TradeMintLink({
   mint,
   onClick,
   children,
-  ...props
-}: {
-  mint: string;
-  children?: ReactNode;
-} & Omit<ComponentProps<typeof Link>, "href">) {
+  className,
+  ...linkProps
+}: TradeMintLinkProps) {
   const nav = useTradeMintNav();
 
   if (nav) {
     return (
       <button
         type="button"
-        {...(props as ComponentProps<"button">)}
+        className={cn(
+          "cursor-pointer border-0 bg-transparent p-0 text-left font-inherit text-inherit outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+          className,
+        )}
         onClick={(event) => {
           onClick?.(event as unknown as MouseEvent<HTMLAnchorElement>);
           nav.selectMint(mint);
@@ -39,7 +47,13 @@ export function TradeMintLink({
   }
 
   return (
-    <Link href={`/trade/${mint}`} prefetch={false} onClick={onClick} {...props}>
+    <Link
+      href={`/trade/${mint}`}
+      prefetch={false}
+      onClick={onClick}
+      className={className}
+      {...linkProps}
+    >
       {children}
     </Link>
   );

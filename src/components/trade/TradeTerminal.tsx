@@ -50,7 +50,7 @@ function TradeTerminalShell({ trending }: { trending: Token[] }) {
           "lg:[grid-template-areas:'trending_header_sidebar'_'trending_chart_sidebar'_'trending_activity_sidebar']",
         ].join(" ")}
       >
-        <aside className="hidden min-h-0 border-r border-white/8 bg-card/20 lg:flex [grid-area:trending] lg:row-span-3">
+        <aside className="hidden min-h-0 w-full min-w-0 flex-col border-r border-white/8 bg-card/20 lg:flex [grid-area:trending] lg:row-span-3">
           <TrendingList tokens={trending} activeMint={token.mint} />
         </aside>
 
