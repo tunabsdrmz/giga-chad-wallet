@@ -1,7 +1,17 @@
 import { notFound } from "next/navigation";
-import { Navbar } from "@/components/layout/Navbar";
 import { TradeTerminal } from "@/components/trade/TradeTerminal";
+import { getLeaderboard } from "@/lib/leaderboard";
+import type { Period } from "@/lib/supabase/types";
 import { getTokenByMint, getTrending, getStaticMints } from "@/lib/tokens";
+
+const VALID_PERIODS: Period[] = ["24h", "7d", "30d", "all"];
+
+function parsePeriod(value: string | undefined): Period {
+  if (value && VALID_PERIODS.includes(value as Period)) {
+    return value as Period;
+  }
+  return "30d";
+}
 
 export function generateStaticParams() {
   return getStaticMints().map((mint) => ({ mint }));
@@ -9,22 +19,29 @@ export function generateStaticParams() {
 
 export default async function TradeTokenPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ mint: string }>;
+  searchParams: Promise<{ period?: string }>;
 }) {
   const { mint } = await params;
-  const trending = await getTrending(20);
+  const sp = await searchParams;
+  const period = parsePeriod(sp.period);
+  const [trending, leaderboard] = await Promise.all([
+    getTrending(20),
+    getLeaderboard(period, 20),
+  ]);
   const token = await getTokenByMint(mint, trending);
   if (!token) notFound();
 
   return (
-    <>
-      <Navbar variant="trade" />
-      <main className="relative flex-1 overflow-x-clip">
-        <div className="pointer-events-none absolute inset-0 bg-grid opacity-30" />
-        <div className="pointer-events-none absolute left-1/2 top-0 h-72 w-72 -translate-x-1/2 rounded-full bg-primary/10 blur-[100px] sm:h-96 sm:w-160 sm:blur-[120px]" />
-        <TradeTerminal initialMint={token.mint} trending={trending} />
-      </main>
-    </>
+    <main className="relative min-h-0 flex-1 overflow-x-clip">
+      <TradeTerminal
+        seedToken={token}
+        trending={trending}
+        leaderboard={leaderboard}
+        leaderboardPeriod={period}
+      />
+    </main>
   );
 }

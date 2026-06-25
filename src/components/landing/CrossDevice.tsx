@@ -1,53 +1,52 @@
-import Image from "next/image";
-import { PageContainer } from "@/components/layout/PageContainer";
 import { BRAND_ASSETS } from "@/lib/constants";
-import { cn } from "@/lib/utils";
-
-const SHOWCASE = [
-  { src: BRAND_ASSETS.appScreens.token, alt: "Token trading screen" },
-  { src: BRAND_ASSETS.appScreens.discover, alt: "Discover feed" },
-  { src: BRAND_ASSETS.appScreens.portfolio, alt: "Portfolio" },
-  { src: BRAND_ASSETS.appScreens.kol, alt: "Top traders" },
-] as const;
 
 export function CrossDevice() {
   return (
-    <section className="py-16 sm:py-20 lg:py-24 xl:py-28">
-      <PageContainer>
-        <div className="mx-auto max-w-3xl text-center">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-primary sm:text-sm">
-            Trade from anywhere
-          </p>
-          <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-bold tracking-tight">
-            Never lose a beat.
-          </h2>
-          <p className="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-muted-foreground sm:mt-5 sm:text-lg">
-            Open a trade on your phone, close it on your desktop. Live prices,
-            real-time alerts and your portfolio always in sync.
-          </p>
-        </div>
+    <section className="w-full self-stretch z-500">
+      {/* Desktop */}
+      <div className="hidden w-full flex-col items-center gap-3 px-8 py-10 text-center min-[800px]:flex">
+        <p className="font-mono text-sm font-bold text-primary">NOW AVAILABLE ON WEB</p>
 
-        <div className="mt-10 grid grid-cols-1 gap-4 xs:grid-cols-2 sm:mt-14 sm:gap-5 md:gap-6 lg:grid-cols-4">
-          {SHOWCASE.map((shot, i) => (
-            <div
-              key={shot.src}
-              className={cn(
-                "group overflow-hidden rounded-2xl border border-white/10 bg-card/40 transition-transform hover:-translate-y-1",
-                i % 2 === 1 && "xs:translate-y-4 md:translate-y-6",
-              )}
-            >
-              <Image
-                src={shot.src}
-                alt={shot.alt}
-                width={472}
-                height={1024}
-                sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
-                className="h-auto w-full"
-              />
-            </div>
-          ))}
+        <h2 className="w-full max-w-4xl text-center text-[3.75rem] leading-[3.5rem] tracking-tight text-[var(--landing-headline)]">
+          trade from anywhere.
+          <br />
+          never lose a beat.
+        </h2>
+
+        <p className="w-full max-w-2xl text-center text-[1.375rem] tracking-tight text-[var(--landing-subtle)]">
+          Open a trade on your phone, close it on your desktop — all in one app.
+        </p>
+
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={BRAND_ASSETS.landing.crossDevice}
+          alt="ChadWallet trading dashboard on desktop"
+          loading="lazy"
+          className="landing-cross-device-img mx-auto mt-2"
+        />
+      </div>
+
+      {/* Mobile */}
+      <div className="relative w-full text-center min-[800px]:hidden">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={BRAND_ASSETS.landing.crossDevice}
+          alt="ChadWallet trading dashboard on desktop"
+          loading="lazy"
+          className="landing-cross-device-img mx-auto"
+        />
+
+        <div className="absolute inset-x-0 bottom-0 flex w-full flex-col items-center gap-3 px-8 pb-4 text-center">
+          <h2 className="w-full max-w-lg text-center text-[2.25rem] leading-9 tracking-tighter text-[var(--landing-headline)]">
+            trade from anywhere.
+            <br />
+            never lose a beat.
+          </h2>
+          <p className="w-full max-w-md text-center leading-5 tracking-tight text-muted-foreground">
+            Pick up a trade on your phone, close it on your desktop — all in one app.
+          </p>
         </div>
-      </PageContainer>
+      </div>
     </section>
   );
 }

@@ -1,49 +1,64 @@
 import Link from "next/link";
-import { Button } from "@/components/ui/button";
 import { SignInButton } from "@/components/auth/SignInButton";
-import { MobileMenu } from "@/components/layout/MobileMenu";
-import { PageContainer } from "@/components/layout/PageContainer";
-import { Logo } from "@/components/brand/Logo";
-import { NAV_LINKS } from "@/lib/constants";
+import { LandingLoginButton } from "@/components/auth/LandingLoginButton";
+import { LogoMark } from "@/components/brand/Logo";
+import { NavbarStoreBadges } from "@/components/layout/NavbarStoreBadges";
+import { TradeSearchBar } from "@/components/trade/TradeSearchBar";
+import { BRAND } from "@/lib/constants";
 
 export type NavbarVariant = "landing" | "trade";
 
 export function Navbar({ variant = "landing" }: { variant?: NavbarVariant }) {
-  const isTrade = variant === "trade";
+  if (variant === "landing") {
+    return <LandingNavbar />;
+  }
 
+  return <TradeNavbar />;
+}
+
+/** fomo.family landing header — desktop only, transparent, logo + store badges + Login. */
+function LandingNavbar() {
   return (
-    <header className="sticky top-0 z-50 border-b border-white/5 bg-background/70 backdrop-blur-xl">
-      <PageContainer tight className="flex h-14 items-center justify-between sm:h-16">
-        <Logo size="sm" />
+    <header className="landing-nav absolute inset-x-0 top-0 z-50 hidden h-13 items-center justify-between bg-transparent px-5 pt-3 min-[800px]:flex">
+      <Link
+        href="/"
+        className="inline-flex items-center gap-2.5 text-foreground"
+        aria-label={`${BRAND.name} home`}
+      >
+        <LogoMark size="nav" className="h-11 w-11" />
+        <span className="text-xl font-extrabold tracking-tight lowercase">
+          {BRAND.wordmark}
+          <span className="text-primary">.</span>
+        </span>
+      </Link>
 
-        <div className="hidden items-center gap-6 lg:gap-8 md:flex">
-          {NAV_LINKS.map((link) => (
-            <Link
-              key={link.href}
-              href={link.href}
-              className="text-sm font-medium text-muted-foreground transition-colors hover:text-foreground"
-            >
-              {link.label}
-            </Link>
-          ))}
+      <div className="flex items-center gap-2">
+        <NavbarStoreBadges />
+        <LandingLoginButton />
+      </div>
+    </header>
+  );
+}
+
+/** fomo trade header — icon, search, wallet/sign-in only. */
+function TradeNavbar() {
+  return (
+    <header className="trade-nav sticky top-0 z-50 border-b backdrop-blur-md">
+      <div className="mx-auto flex h-14 max-w-[125rem] items-center gap-3 px-4 sm:h-[var(--trade-nav-h)] lg:px-5">
+        <Link
+          href="/"
+          className="inline-flex shrink-0 items-center"
+          aria-label={`${BRAND.name} home`}
+        >
+          <LogoMark size="nav" className="h-9 w-9 sm:h-10 sm:w-10" />
+        </Link>
+
+        <div className="flex min-w-0 flex-1 justify-center px-2 sm:px-4">
+          <TradeSearchBar className="max-w-xl" />
         </div>
 
-        <div className="flex items-center gap-2 sm:gap-3">
-          {isTrade ? (
-            <SignInButton />
-          ) : (
-            <Button
-              nativeButton={false}
-              render={<Link href="/trade" />}
-              className="hidden sm:inline-flex"
-              size="sm"
-            >
-              Start trading
-            </Button>
-          )}
-          <MobileMenu />
-        </div>
-      </PageContainer>
+        <SignInButton className="shrink-0" />
+      </div>
     </header>
   );
 }

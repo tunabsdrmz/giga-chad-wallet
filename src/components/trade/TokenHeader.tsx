@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Check, Copy, ExternalLink, Star } from "lucide-react";
 import type { Token } from "@/types/token";
 import { TokenAvatar } from "@/components/token/TokenAvatar";
@@ -33,7 +33,7 @@ export function TokenHeader({ token }: { token: Token }) {
   const up = token.change24h >= 0;
 
   return (
-    <div className="border-b border-white/5 p-3 sm:p-4">
+    <div className="border-b border-[var(--trade-border)] p-3 sm:p-4">
       <div className="flex flex-col gap-3 sm:gap-4">
         <div className="flex items-start gap-3">
           <TokenAvatar
@@ -75,10 +75,47 @@ export function TokenHeader({ token }: { token: Token }) {
           label="Liquidity"
           value={token.liquidity ? formatCompactUsd(token.liquidity) : "—"}
         />
-        <Stat label="Holders" value={formatCompact(token.holders)} />
+        <HolderStat key={token.mint} mint={token.mint} initial={token.holders} />
       </div>
     </div>
   );
+}
+
+function HolderStat({ mint, initial }: { mint: string; initial: number }) {
+  if (initial > 0) {
+    return <Stat label="Holders" value={formatCompact(initial)} />;
+  }
+  return <FetchedHolderStat mint={mint} />;
+}
+
+function FetchedHolderStat({ mint }: { mint: string }) {
+  const [holders, setHolders] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    let cancelled = false;
+    (async () => {
+      try {
+        const res = await fetch(`/api/birdeye/overview/${mint}`);
+        if (cancelled || !res.ok) return;
+        const data = (await res.json()) as { holders?: number };
+        if (typeof data.holders === "number" && data.holders > 0) {
+          setHolders(data.holders);
+        }
+      } catch {
+        // keep 0
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [mint]);
+
+  const value = loading ? "—" : formatCompact(holders);
+  return <Stat label="Holders" value={value} />;
 }
 
 function AddressRow({ mint }: { mint: string }) {

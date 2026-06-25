@@ -48,10 +48,10 @@ export function PrivyProviders({ children }: { children: ReactNode }) {
         loginMethods: [...PRIVY_LOGIN_METHODS],
         appearance: {
           theme: "dark",
-          accentColor: "#a3e635",
+          accentColor: "#516af6",
           walletChainType: "solana-only",
           showWalletLoginFirst: false,
-          logo: "/next.svg",
+          logo: "/brand/logo-on-dark.png",
         },
         embeddedWallets: {
           solana: {

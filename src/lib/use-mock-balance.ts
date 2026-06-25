@@ -1,8 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useSyncExternalStore } from "react";
 
 const DEFAULT_USDC = 1250;
+
+const balanceListeners = new Set<() => void>();
+
+function notifyBalanceListeners() {
+  for (const listener of balanceListeners) {
+    listener();
+  }
+}
+
+function subscribeBalance(callback: () => void) {
+  balanceListeners.add(callback);
+  return () => balanceListeners.delete(callback);
+}
 
 function storageKey(did: string | null): string {
   return did ? `chadwallet:demo-usdc:${did}` : "chadwallet:demo-usdc:guest";
@@ -26,20 +39,21 @@ function readBalance(key: string): number {
  */
 export function useMockBalance(did: string | null) {
   const key = storageKey(did);
-  const [balance, setBalance] = useState<number>(DEFAULT_USDC);
 
-  useEffect(() => {
-    setBalance(readBalance(key));
-  }, [key]);
+  const balance = useSyncExternalStore(
+    subscribeBalance,
+    () => readBalance(key),
+    () => DEFAULT_USDC,
+  );
 
   const persist = useCallback(
     (next: number) => {
-      setBalance(next);
       try {
         window.localStorage.setItem(key, String(next));
       } catch {
         // ignore quota errors
       }
+      notifyBalanceListeners();
     },
     [key],
   );
@@ -47,19 +61,20 @@ export function useMockBalance(did: string | null) {
   const debit = useCallback(
     (usd: number) => {
       if (usd <= 0) return false;
-      if (usd > balance) return false;
-      persist(balance - usd);
+      const current = readBalance(key);
+      if (usd > current) return false;
+      persist(current - usd);
       return true;
     },
-    [balance, persist],
+    [key, persist],
   );
 
   const credit = useCallback(
     (usd: number) => {
       if (usd <= 0) return;
-      persist(balance + usd);
+      persist(readBalance(key) + usd);
     },
-    [balance, persist],
+    [key, persist],
   );
 
   return { balance, debit, credit };

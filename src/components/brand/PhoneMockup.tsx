@@ -9,6 +9,8 @@ export function PhoneMockup({
   poster,
   alt,
   isVideo = false,
+  variant = "default",
+  fitHeight = false,
   className,
   screenClassName,
 }: {
@@ -16,15 +18,24 @@ export function PhoneMockup({
   poster?: string;
   alt?: string;
   isVideo?: boolean;
+  variant?: "default" | "landing";
+  /** Size from height + aspect-ratio instead of default fixed width. */
+  fitHeight?: boolean;
   className?: string;
   screenClassName?: string;
 }) {
+  const heightSized =
+    fitHeight || Boolean(className?.match(/(?:^|\s)(?:min-\[[^\]]+\]:)?h-/));
+
   return (
     <div
       className={cn(
-        "relative aspect-9/19.5 w-[260px] rounded-[2.4rem]",
+        "relative aspect-9/19.5 rounded-[2.4rem]",
         "bg-zinc-900 p-[6px] ring-1 ring-white/10",
-        "shadow-[0_40px_80px_-20px_rgba(0,0,0,0.6),0_10px_30px_-12px_rgba(34,197,94,0.18)]",
+        !heightSized && "w-[260px]",
+        variant === "landing"
+          ? "shadow-[0_40px_80px_-20px_rgba(0,0,0,0.6),0_10px_30px_-12px_rgba(81,106,246,0.25)]"
+          : "shadow-[0_40px_80px_-20px_rgba(0,0,0,0.6),0_10px_30px_-12px_rgba(34,197,94,0.18)]",
         className,
       )}
     >
@@ -45,7 +56,7 @@ export function PhoneMockup({
             muted
             loop
             playsInline
-            preload="metadata"
+            preload="auto"
             className="h-full w-full object-cover"
           />
         ) : (

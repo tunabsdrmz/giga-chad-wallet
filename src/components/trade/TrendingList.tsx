@@ -30,7 +30,7 @@ export function TrendingList({
 
   return (
     <div className="flex h-full w-full flex-col">
-      <div className="sticky top-0 z-10 border-b border-white/8 bg-card/80 px-3 py-2 backdrop-blur">
+      <div className="trade-panel-header sticky top-0 z-10 border-b px-3 py-2 backdrop-blur">
         <div className="mb-2 flex items-center justify-between">
           <h2 className="text-sm font-semibold">Trending</h2>
           <span className="text-xs text-muted-foreground">24h vol</span>
@@ -76,9 +76,7 @@ function TrendingRow({ token, active }: { token: Token; active: boolean }) {
       mint={token.mint}
       className={cn(
         "flex w-full min-w-0 items-center gap-2.5 border-l-2 px-3 py-2 transition-colors",
-        active
-          ? "border-primary bg-primary/10"
-          : "border-transparent hover:bg-white/4",
+        active ? "trade-row-active" : "border-transparent hover:bg-white/4",
       )}
     >
       <TokenAvatar

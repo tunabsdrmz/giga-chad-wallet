@@ -7,31 +7,53 @@ import { generateHolders } from "@/lib/mock/market";
 import { formatCompactUsd, shortenAddress } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
+type HolderSource = "loading" | "live" | "demo";
+
 export function HoldersTable({ token }: { token: Token }) {
   const [holders, setHolders] = useState<Holder[]>(() => generateHolders(token));
+  const [source, setSource] = useState<HolderSource>("loading");
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect -- reset mock rows before fetch
+    setHolders(generateHolders(token));
+    setSource("loading");
     let cancelled = false;
     (async () => {
       try {
         const url = `/api/birdeye/holders/${token.mint}?price=${token.price}&marketCap=${token.marketCap}`;
         const res = await fetch(url);
-        if (cancelled || !res.ok) return;
+        if (cancelled) return;
+        if (!res.ok) {
+          setSource("demo");
+          return;
+        }
         const json = (await res.json()) as { holders?: Holder[] };
-        if (json.holders && json.holders.length > 0) setHolders(json.holders);
+        if (cancelled) return;
+        if (json.holders && json.holders.length > 0) {
+          setHolders(json.holders);
+          setSource("live");
+        } else {
+          setSource("demo");
+        }
       } catch {
-        // keep mock
+        if (!cancelled) setSource("demo");
       }
     })();
     return () => {
       cancelled = true;
     };
-  }, [token.mint, token.price, token.marketCap]);
+  }, [token]);
 
   const top = holders[0]?.percent ?? 0;
 
   return (
     <div className="text-sm">
+      {source === "demo" ? (
+        <p className="border-b border-amber-500/15 bg-amber-500/5 px-3 py-1.5 text-[11px] text-amber-200/80">
+          Demo data — live holder list unavailable
+        </p>
+      ) : null}
+
       <div className="hidden grid-cols-[2.5rem_minmax(0,1fr)_5.5rem_6rem] gap-2 border-b border-white/5 px-3 py-2 text-[11px] font-semibold uppercase tracking-wide text-muted-foreground md:grid">
         <span>#</span>
         <span>Holder</span>

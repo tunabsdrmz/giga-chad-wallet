@@ -20,7 +20,11 @@ import { WalletMenuContent } from "@/components/auth/WalletMenuContent";
 export function SignInButton({ className }: { className?: string }) {
   if (!isPrivyConfigured) {
     return (
-      <Button variant="outline" size="sm" disabled className={cn("opacity-70", className)}>
+      <Button
+        variant="outline"
+        size="sm"
+        disabled
+        className={cn("opacity-70", className)}>
         Configure Privy
       </Button>
     );
@@ -36,7 +40,11 @@ function ActiveSignInButton({ className }: { className?: string }) {
 
   if (!ready) {
     return (
-      <Button variant="outline" size="sm" disabled className={className}>
+      <Button
+        variant="outline"
+        size="sm"
+        disabled
+        className={className}>
         Loading…
       </Button>
     );
@@ -44,7 +52,10 @@ function ActiveSignInButton({ className }: { className?: string }) {
 
   if (!authenticated || !address) {
     return (
-      <Button size="sm" className={className} onClick={() => login()}>
+      <Button
+        size="lg"
+        className={className}
+        onClick={() => login()}>
         Sign in
       </Button>
     );
@@ -56,7 +67,10 @@ function ActiveSignInButton({ className }: { className?: string }) {
     <Menu.Root>
       <Menu.Trigger
         render={
-          <Button variant="outline" size="sm" className={cn("gap-2", className)}>
+          <Button
+            variant="outline"
+            size="sm"
+            className={cn("gap-2", className)}>
             <span className="text-primary">◎ {balanceLabel}</span>
             <span className="hidden text-muted-foreground sm:inline">·</span>
             <span className="font-mono text-xs">{shortenAddress(address)}</span>
@@ -64,8 +78,13 @@ function ActiveSignInButton({ className }: { className?: string }) {
         }
       />
       <Menu.Portal>
-        <Menu.Positioner sideOffset={8} align="end">
-          <WalletMenuContent address={address} onLogout={() => logout()} />
+        <Menu.Positioner
+          sideOffset={8}
+          align="end">
+          <WalletMenuContent
+            address={address}
+            onLogout={() => logout()}
+          />
         </Menu.Positioner>
       </Menu.Portal>
     </Menu.Root>

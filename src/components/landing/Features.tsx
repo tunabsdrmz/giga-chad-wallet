@@ -1,5 +1,3 @@
-import Image from "next/image";
-import { PageContainer } from "@/components/layout/PageContainer";
 import { BRAND_ASSETS } from "@/lib/constants";
 
 const FEATURES = [
@@ -37,45 +35,53 @@ const FEATURES = [
 
 export function Features() {
   return (
-    <section id="features" className="py-16 sm:py-20 lg:py-24 xl:py-28">
-      <PageContainer>
-        <div className="mx-auto max-w-2xl text-center">
-          <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-primary sm:text-sm">
-            Never miss out again
-          </p>
-          <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-bold tracking-tight">
-            The only social-first trading app
-          </h2>
-        </div>
+    <section
+      id="features"
+      className="flex w-full max-w-[125rem] flex-col gap-[3.25rem] self-stretch px-3 pt-8 min-[500px]:self-center min-[800px]:px-20 min-[800px]:py-2"
+    >
+      <div className="hidden w-full flex-col gap-3 px-8 min-[800px]:flex">
+        <h2 className="text-[3.75rem] leading-[3.75rem] tracking-tighter text-[var(--landing-headline)]">
+          never miss out again
+        </h2>
+        <p className="text-[1.75rem] leading-6 tracking-tight text-[var(--landing-subtle)]">
+          the only social-first trading app
+        </p>
+      </div>
 
-        <div className="mt-10 grid gap-4 sm:mt-14 sm:grid-cols-2 sm:gap-5 lg:grid-cols-3 lg:gap-6">
-          {FEATURES.map((feat) => (
-            <article
-              key={feat.title}
-              className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-card/40 transition-colors hover:border-primary/40 hover:bg-card/70"
-            >
-              <div className="px-4 pt-5 sm:px-6 sm:pt-6">
-                <p className="text-xs font-semibold uppercase tracking-widest text-primary">
-                  {feat.eyebrow}
-                </p>
-                <h3 className="mt-2 text-base font-semibold leading-snug sm:text-lg">
-                  {feat.title}
-                </h3>
-              </div>
-              <div className="relative mt-3 overflow-hidden sm:mt-4">
-                <Image
-                  src={feat.src}
-                  alt={feat.title}
-                  width={472}
-                  height={1024}
-                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
-                  className="h-auto w-full transition-transform duration-500 group-hover:scale-[1.02] sm:group-hover:scale-[1.03]"
-                />
-              </div>
-            </article>
-          ))}
-        </div>
-      </PageContainer>
+      <div className="grid w-full grid-cols-1 gap-3 min-[800px]:grid-cols-3 min-[800px]:gap-6">
+        {FEATURES.map((feat) => (
+          <FeatureCard key={feat.title} {...feat} />
+        ))}
+      </div>
     </section>
+  );
+}
+
+function FeatureCard({
+  src,
+  eyebrow,
+  title,
+}: {
+  src: string;
+  eyebrow: string;
+  title: string;
+}) {
+  return (
+    <article className="landing-card landing-feature-card group min-w-0 overflow-hidden rounded-[25px]">
+      <div className="landing-feature-card-copy">
+        <p className="landing-feature-card-eyebrow">{eyebrow}</p>
+        <h3 className="landing-feature-card-title">{title}</h3>
+      </div>
+
+      <div className="landing-feature-card-media">
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img
+          src={src}
+          alt=""
+          loading="lazy"
+          className="landing-feature-card-image"
+        />
+      </div>
+    </article>
   );
 }

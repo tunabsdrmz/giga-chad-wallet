@@ -1,0 +1,328 @@
+/* fomo.family-aligned palette — scoped to landing only. */
+.landing-theme {
+  --background: #060510;
+  --foreground: #f7f7f7;
+  --card: #12111a;
+  --card-foreground: #f7f7f7;
+  --popover: #12111a;
+  --popover-foreground: #f7f7f7;
+  --primary: #516af6;
+  --primary-foreground: #f7f7f7;
+  --secondary: #12111a;
+  --secondary-foreground: #f7f7f7;
+  --muted: #161522;
+  --muted-foreground: #9899a3;
+  --accent: #221d4b;
+  --accent-foreground: #f7f7f7;
+  --destructive: #ff622e;
+  --border: #474b52;
+  --input: #474b52;
+  --ring: #516af6;
+  --up: #21c95e;
+  --down: #ff622e;
+
+  --landing-bg-secondary: #12111a;
+  --landing-bg-tertiary: rgba(203, 208, 235, 0.1);
+  --landing-headline: #eaedff;
+  --landing-subtle: rgba(209, 216, 255, 0.6);
+  --landing-accent-glow: rgba(96, 106, 247, 0.5);
+
+  background-color: var(--background);
+  color: var(--foreground);
+}
+
+.landing-theme .landing-cross-device-img {
+  display: block;
+  width: min(90vw, 72rem);
+  max-width: 100%;
+  height: auto;
+  border-radius: 0.75rem;
+  box-shadow: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+}
+
+@media (max-width: 799px) {
+  .landing-theme .landing-cross-device-img {
+    width: 100%;
+    border-radius: 0;
+    box-shadow: none;
+  }
+}
+
+.landing-theme .landing-space-bg {
+  background-color: #060510;
+  isolation: isolate;
+}
+
+/* fomo astronaut — in-flow overlap via negative margin, no reserved padding slot */
+.landing-theme .landing-hero-promo {
+  animation: landing-float-slow 10s ease-in-out infinite;
+}
+
+@media (min-width: 800px) {
+  .landing-theme .landing-hero-promo {
+    animation: landing-float 4s ease-in-out infinite;
+  }
+}
+
+.landing-theme .landing-space-drift {
+  animation: landing-space-drift 28s ease-in-out infinite;
+  will-change: transform;
+  transform-origin: center top;
+}
+
+@keyframes landing-space-drift {
+  0%,
+  100% {
+    transform: scale(1.04) translate3d(0, 0, 0);
+  }
+  50% {
+    transform: scale(1.04) translate3d(-0.5%, 0.25%, 0);
+  }
+}
+
+.landing-theme .landing-legends-bg {
+  background:
+    radial-gradient(
+      ellipse 70% 55% at 50% 50%,
+      rgba(81, 106, 246, 0.18),
+      transparent 65%
+    ),
+    radial-gradient(ellipse 90% 70% at 50% 100%, rgba(34, 29, 75, 0.85), transparent 70%),
+    linear-gradient(180deg, #060510 0%, #0a0818 40%, #12102a 100%);
+}
+
+.landing-theme .landing-card {
+  border: 1px solid var(--landing-bg-tertiary);
+  background-color: var(--landing-bg-secondary);
+  transition:
+    border-color 0.3s ease,
+    transform 0.3s ease;
+}
+
+.landing-theme .landing-card:hover {
+  border-color: rgba(255, 255, 255, 0.12);
+}
+
+/* Fixed copy + media slots — images align across every card and breakpoint. */
+.landing-theme .landing-feature-card {
+  display: grid;
+  grid-template-rows: var(--landing-feature-copy-h) var(--landing-feature-media-h);
+  padding-top: 2rem;
+  --landing-feature-copy-h: 8.75rem;
+  --landing-feature-media-h: 14rem;
+}
+
+@media (min-width: 800px) {
+  .landing-theme .landing-feature-card {
+    --landing-feature-copy-h: 11rem;
+    --landing-feature-media-h: 18rem;
+  }
+}
+
+.landing-theme .landing-feature-card-copy {
+  box-sizing: border-box;
+  height: var(--landing-feature-copy-h);
+  max-height: var(--landing-feature-copy-h);
+  min-height: var(--landing-feature-copy-h);
+  padding-inline: 2rem;
+  overflow: hidden;
+}
+
+.landing-theme .landing-feature-card-eyebrow {
+  height: 1.25rem;
+  font-family: var(--font-mono, ui-monospace, monospace);
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.25rem;
+  color: var(--primary);
+}
+
+.landing-theme .landing-feature-card-title {
+  box-sizing: border-box;
+  display: -webkit-box;
+  height: 6rem;
+  max-height: 6rem;
+  min-height: 6rem;
+  margin-top: 0.5rem;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 3;
+  font-size: 1.75rem;
+  font-weight: 400;
+  line-height: 2rem;
+  letter-spacing: -0.025em;
+  color: var(--landing-headline);
+}
+
+@media (min-width: 800px) {
+  .landing-theme .landing-feature-card-title {
+    height: 7.5rem;
+    max-height: 7.5rem;
+    min-height: 7.5rem;
+    font-size: 2.25rem;
+    line-height: 2.5rem;
+  }
+}
+
+.landing-theme .landing-feature-card-media {
+  box-sizing: border-box;
+  display: flex;
+  height: var(--landing-feature-media-h);
+  max-height: var(--landing-feature-media-h);
+  min-height: var(--landing-feature-media-h);
+  align-items: flex-end;
+  justify-content: center;
+  overflow: hidden;
+  padding-bottom: 1.25rem;
+}
+
+.landing-theme .landing-feature-card-image {
+  height: 100%;
+  width: auto;
+  max-width: 84%;
+  object-fit: contain;
+  object-position: bottom center;
+  transition: transform 0.3s ease;
+}
+
+.landing-theme .landing-feature-card:hover .landing-feature-card-image {
+  transform: scale(1.05);
+}
+
+.landing-theme .landing-glass-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid var(--landing-bg-tertiary);
+  font-size: 1.125rem;
+  font-weight: 700;
+  transition:
+    background-color 0.15s ease,
+    color 0.15s ease;
+}
+
+.landing-theme .landing-glass-btn-primary {
+  background-color: rgba(96, 106, 247, 0.5);
+  backdrop-filter: blur(12px);
+}
+
+.landing-theme .landing-glass-btn-primary:hover {
+  background-color: rgba(96, 106, 247, 0.8);
+}
+
+.landing-theme .landing-glass-btn-secondary {
+  background-color: rgba(255, 255, 255, 0.12);
+  backdrop-filter: blur(12px);
+}
+
+.landing-theme .landing-glass-btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+}
+
+.landing-theme .landing-store-badge {
+  border-radius: 0.375rem;
+  background-color: rgba(255, 255, 255, 0.2);
+  backdrop-filter: blur(12px);
+  transition:
+    opacity 0.15s ease,
+    box-shadow 0.15s ease;
+}
+
+.landing-theme .landing-store-badge:hover {
+  opacity: 0.9;
+  box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.4);
+}
+
+.landing-theme .landing-top-chrome {
+  /* Reserve space for absolute landing nav so ticker sits below, not under it. */
+  --landing-nav-h: 3.25rem;
+}
+
+@media (min-width: 800px) {
+  .landing-theme .landing-top-chrome {
+    padding-top: var(--landing-nav-h);
+  }
+}
+
+.landing-theme .landing-ticker {
+  margin-top: 0.5rem;
+  border-color: var(--landing-bg-tertiary);
+  background-color: rgb(18 17 26 / 0.65);
+}
+
+.landing-theme .landing-ticker-chip {
+  border: 1px solid var(--landing-bg-tertiary);
+  background-color: rgb(255 255 255 / 0.2);
+}
+
+.landing-theme .landing-ticker-chip:hover {
+  border-color: rgba(81, 106, 246, 0.6) !important;
+  box-shadow: 0 4px 20px -4px rgba(81, 106, 246, 0.35) !important;
+}
+
+@keyframes landing-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes landing-float-slow {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes landing-spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes landing-spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+.landing-theme .landing-animate-float {
+  animation: landing-float 4s ease-in-out infinite;
+}
+
+.landing-theme .landing-animate-float-slow {
+  animation: landing-float-slow 10s ease-in-out infinite;
+}
+
+.landing-theme .landing-orbit-inner {
+  animation: landing-spin-reverse 30s linear infinite;
+}
+
+.landing-theme .landing-orbit-outer {
+  animation: landing-spin-slow 45s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .landing-theme .landing-animate-float,
+  .landing-theme .landing-animate-float-slow,
+  .landing-theme .landing-orbit-inner,
+  .landing-theme .landing-orbit-outer,
+  .landing-theme .landing-space-drift,
+  .landing-theme .landing-hero-promo {
+    animation: none !important;
+  }
+}

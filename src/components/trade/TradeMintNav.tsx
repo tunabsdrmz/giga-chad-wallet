@@ -8,10 +8,14 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { mintFromPathname } from "@/lib/trade-mint-path";
+import type { Token } from "@/types/token";
 
 interface TradeMintNav {
   activeMint: string;
-  selectMint: (mint: string) => void;
+  /** Client-side mint switch; pass `token` when the mint is outside the trending pool. */
+  selectMint: (mint: string, token?: Token) => void;
+  getKnownToken: (mint: string) => Token | undefined;
 }
 
 const TradeMintNavContext = createContext<TradeMintNav | null>(null);
@@ -29,12 +33,24 @@ export function TradeMintNavProvider({
   children: ReactNode;
 }) {
   const [activeMint, setActiveMint] = useState(initialMint);
-
-  useEffect(() => {
+  const [prevInitialMint, setPrevInitialMint] = useState(initialMint);
+  const [tokenOverrides, setTokenOverrides] = useState<Record<string, Token>>({});
+  if (initialMint !== prevInitialMint) {
+    setPrevInitialMint(initialMint);
     setActiveMint(initialMint);
-  }, [initialMint]);
+  }
 
-  const selectMint = useCallback((mint: string) => {
+  const getKnownToken = useCallback(
+    (mint: string) => tokenOverrides[mint],
+    [tokenOverrides],
+  );
+
+  const selectMint = useCallback((mint: string, token?: Token) => {
+    if (token) {
+      setTokenOverrides((prev) =>
+        prev[mint] === token ? prev : { ...prev, [mint]: token },
+      );
+    }
     setActiveMint((current) => {
       if (mint === current) return current;
       window.history.replaceState(null, "", `/trade/${mint}`);
@@ -44,15 +60,15 @@ export function TradeMintNavProvider({
 
   useEffect(() => {
     const onPopState = () => {
-      const segment = window.location.pathname.split("/").pop();
-      if (segment) setActiveMint(segment);
+      const mint = mintFromPathname(window.location.pathname);
+      if (mint) setActiveMint(mint);
     };
     window.addEventListener("popstate", onPopState);
     return () => window.removeEventListener("popstate", onPopState);
   }, []);
 
   return (
-    <TradeMintNavContext.Provider value={{ activeMint, selectMint }}>
+    <TradeMintNavContext.Provider value={{ activeMint, selectMint, getKnownToken }}>
       {children}
     </TradeMintNavContext.Provider>
   );

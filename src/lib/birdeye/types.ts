@@ -139,3 +139,27 @@ export interface BirdEyeCandleItem {
 export interface BirdEyeOhlcvPayload {
   items?: BirdEyeCandleItem[];
 }
+
+// ---------- /defi/v3/search ---------------------------------------------
+
+export interface BirdEyeSearchTokenItem {
+  address: string;
+  symbol?: string;
+  name?: string;
+  logo_uri?: string;
+  price?: number;
+  price_change_24h_percent?: number;
+  volume_24h_usd?: number;
+  market_cap?: number;
+  fdv?: number;
+  liquidity?: number;
+}
+
+export interface BirdEyeSearchGroup {
+  type?: string;
+  result?: BirdEyeSearchTokenItem[];
+}
+
+export interface BirdEyeSearchPayload {
+  items?: BirdEyeSearchGroup[];
+}

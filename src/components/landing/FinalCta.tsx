@@ -1,54 +1,55 @@
-import Link from "next/link";
-import { ArrowRight } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { StoreBadges } from "@/components/layout/StoreBadges";
-import { PageContainer } from "@/components/layout/PageContainer";
 import { LogoMark } from "@/components/brand/Logo";
+import { LandingButton } from "@/components/landing/LandingButton";
+import { StoreBadges } from "@/components/layout/StoreBadges";
 
 export function FinalCta() {
   return (
-    <section id="download" className="py-16 sm:py-20 lg:py-24 xl:py-28">
-      <PageContainer>
-        <div className="relative overflow-hidden rounded-2xl border border-primary/20 bg-primary/10 px-4 py-14 text-center sm:rounded-3xl sm:px-8 sm:py-20 lg:px-12 lg:py-24">
-          <div className="pointer-events-none absolute left-1/2 top-1/2 h-64 w-64 -translate-x-1/2 -translate-y-1/2 rounded-full bg-primary/25 blur-[100px] sm:h-md sm:w-md sm:blur-[120px]" />
-          <DecorativeOrbits />
+    <section id="download" className="relative flex w-full self-stretch items-center justify-center py-24 lg:py-32">
+      <div className="landing-legends-bg absolute inset-0" aria-hidden />
+      <div
+        className="pointer-events-none absolute inset-x-0 top-0 h-40 bg-linear-to-b from-[#060510] to-transparent"
+        aria-hidden
+      />
+      <div
+        className="pointer-events-none absolute inset-x-0 bottom-0 h-40 bg-linear-to-t from-[#060510] to-transparent"
+        aria-hidden
+      />
 
-          <div className="relative mx-auto max-w-3xl">
-            <LogoMark size="xl" className="mx-auto mb-5 sm:mb-6" />
-            <h2 className="text-[clamp(1.75rem,4vw,3rem)] font-bold tracking-tight">
-              A trading app for the rest of us
+      <div className="relative z-10 flex w-[80vw] max-w-4xl flex-col items-center px-8">
+        <div className="relative flex aspect-square w-full max-w-lg flex-col items-center justify-center">
+          <div className="relative z-10 flex flex-col items-center gap-3 text-center lg:gap-6">
+            <LogoMark size="xl" className="mb-2" />
+            <h2 className="text-[2.5rem] leading-10 tracking-tighter text-[var(--landing-headline)] lg:text-[3.75rem] lg:leading-[3.75rem]">
+              A trading app
+              <br />
+              for the rest of us
             </h2>
-            <p className="mt-4 text-base text-muted-foreground sm:mt-5 sm:text-lg">
+            <p className="text-base tracking-tight text-muted-foreground lg:text-[1.375rem] lg:leading-7">
               Join 500,000+ traders making their name on ChadWallet.
             </p>
-            <div className="mx-auto mt-8 flex w-full max-w-md flex-col items-stretch gap-3 sm:mt-10 sm:max-w-none sm:flex-row sm:items-center sm:justify-center sm:gap-4">
-              <Button
-                size="lg"
-                nativeButton={false}
-                className="h-12 w-full px-7 text-base sm:w-auto"
-                render={<Link href="/trade" />}
-              >
+            <div className="flex w-full flex-col items-stretch gap-2 pt-4 sm:flex-row sm:justify-center sm:gap-3 lg:pt-6">
+              <LandingButton href="/trade" variant="primary">
                 Start trading
-                <ArrowRight className="ml-1" size={18} />
-              </Button>
-              <StoreBadges className="sm:justify-center" />
+              </LandingButton>
+              <div className="hidden sm:block">
+                <StoreBadges variant="glass" stackOnMobile={false} />
+              </div>
+            </div>
+            <div className="flex w-full justify-center pt-2 sm:hidden">
+              <StoreBadges variant="glass" />
             </div>
           </div>
-        </div>
-      </PageContainer>
-    </section>
-  );
-}
 
-function DecorativeOrbits() {
-  return (
-    <div
-      aria-hidden="true"
-      className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-hidden"
-    >
-      <div className="absolute size-48 rounded-full border border-dashed border-white/10 sm:size-72 md:size-96" />
-      <div className="absolute size-64 rounded-full border border-dashed border-white/10 sm:size-96 md:h-144 md:w-xl" />
-      <div className="absolute size-80 rounded-full border border-dashed border-white/5 sm:size-128 md:h-208 md:w-208" />
-    </div>
+          <div
+            className="landing-orbit-inner pointer-events-none absolute inset-0 z-[1] m-auto size-[35vw] max-w-[18rem] rounded-full border border-dashed border-white/10 lg:max-w-[14rem]"
+            aria-hidden
+          />
+          <div
+            className="landing-orbit-outer pointer-events-none absolute inset-0 z-[1] m-auto size-[55vw] max-w-[28rem] rounded-full border border-dashed border-white/10 lg:max-w-[22rem]"
+            aria-hidden
+          />
+        </div>
+      </div>
+    </section>
   );
 }

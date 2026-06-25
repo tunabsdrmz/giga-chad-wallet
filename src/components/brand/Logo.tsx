@@ -1,15 +1,16 @@
 import Image from "next/image";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
-import { BRAND } from "@/lib/constants";
+import { BRAND, BRAND_ASSETS } from "@/lib/constants";
 
-type LogoSize = "sm" | "md" | "lg" | "xl";
+type LogoSize = "sm" | "md" | "lg" | "xl" | "nav";
 
 const SIZE_PX: Record<LogoSize, number> = {
   sm: 28,
   md: 36,
   lg: 56,
   xl: 96,
+  nav: 44,
 };
 
 const WORDMARK_CLS: Record<LogoSize, string> = {
@@ -17,13 +18,9 @@ const WORDMARK_CLS: Record<LogoSize, string> = {
   md: "text-2xl",
   lg: "text-4xl",
   xl: "text-6xl",
+  nav: "text-xl",
 };
 
-/**
- * Brand mark. The PNG asset has a black background baked in, so we use
- * `mix-blend-screen` to drop the black against any dark surface — the
- * white linework stays, the black background becomes invisible.
- */
 export function LogoMark({
   size = "md",
   className,
@@ -34,12 +31,12 @@ export function LogoMark({
   const px = SIZE_PX[size];
   return (
     <Image
-      src="/brand/logo-on-dark.png"
+      src={BRAND_ASSETS.logoTransparent}
       alt={`${BRAND.name} logo`}
       width={px}
       height={px}
       priority
-      className={cn("mix-blend-screen select-none", className)}
+      className={cn("select-none", className)}
     />
   );
 }

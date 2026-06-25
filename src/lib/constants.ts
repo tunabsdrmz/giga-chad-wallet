@@ -8,6 +8,7 @@ export const BRAND = {
 export const BRAND_ASSETS = {
   logoDark: "/brand/logo.png",
   logoLight: "/brand/logo-on-dark.png",
+  logoTransparent: "/brand/logo-transparent.png",
   promoVideo: "/brand/promo.mp4",
   appScreens: {
     splash: "/brand/app/splash.png",
@@ -28,6 +29,10 @@ export const BRAND_ASSETS = {
     portfolio: "/brand/flow/portfolio-4.png",
     relaunch: "/brand/flow/relaunch-4.png",
   },
+  landing: {
+    spaceBg: "/brand/landing/space-bg.webp",
+    crossDevice: "/brand/landing/cross-device-desktop.png",
+  },
 } as const;
 
 export const STORE_LINKS = {
@@ -43,7 +48,6 @@ export const SOCIAL_LINKS = {
 
 export const NAV_LINKS = [
   { label: "Trade", href: "/trade" },
-  { label: "Leaderboard", href: "/leaderboard" },
   { label: "Features", href: "/#features" },
   { label: "Download", href: "/#download" },
 ] as const;

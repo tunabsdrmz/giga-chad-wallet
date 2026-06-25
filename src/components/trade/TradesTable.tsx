@@ -49,7 +49,7 @@ export function TradesTable({ token }: { token: Token }) {
       clearInterval(interval);
       clearInterval(tick);
     };
-  }, [token.mint]);
+  }, [token]);
 
   useEffect(() => {
     if (!usingMock) return;
@@ -57,7 +57,7 @@ export function TradesTable({ token }: { token: Token }) {
       setTrades((prev) => [randomTrade(token), ...prev].slice(0, MAX_ROWS));
     }, 3000);
     return () => clearInterval(id);
-  }, [usingMock, token.mint]);
+  }, [usingMock, token]);
 
   return (
     <div className="text-sm">

@@ -1,73 +1,119 @@
 "use client";
 
-import { TokenTicker } from "@/components/token/TokenTicker";
 import { MobileTrendingStrip } from "@/components/trade/MobileTrendingStrip";
-import { TrendingList } from "@/components/trade/TrendingList";
+import { TradeLeftSidebar } from "@/components/trade/TradeLeftSidebar";
 import { TokenHeader } from "@/components/trade/TokenHeader";
 import { PriceChart } from "@/components/trade/PriceChart";
 import { ActivityPanel } from "@/components/trade/ActivityPanel";
 import { TradeSidebar } from "@/components/trade/TradeSidebar";
-import {
-  TradeMintNavProvider,
-  useTradeMintNav,
-} from "@/components/trade/TradeMintNav";
+import { useTradeMintNav } from "@/components/trade/TradeMintNav";
+import { TRADE_TERMINAL_GRID_CLASS } from "@/components/trade/trade-terminal-grid";
+import type { LeaderboardEntry } from "@/lib/leaderboard";
+import type { Period } from "@/lib/supabase/types";
 import type { Token } from "@/types/token";
 
 export function TradeTerminal({
-  initialMint,
+  seedToken,
   trending,
+  leaderboard,
+  leaderboardPeriod,
 }: {
-  initialMint: string;
+  seedToken: Token;
   trending: Token[];
+  leaderboard: LeaderboardEntry[];
+  leaderboardPeriod: Period;
 }) {
   return (
-    <TradeMintNavProvider initialMint={initialMint}>
-      <TradeTerminalShell trending={trending} />
-    </TradeMintNavProvider>
+    <TradeTerminalShell
+      seedToken={seedToken}
+      trending={trending}
+      leaderboard={leaderboard}
+      leaderboardPeriod={leaderboardPeriod}
+    />
   );
 }
 
-function TradeTerminalShell({ trending }: { trending: Token[] }) {
-  const nav = useTradeMintNav();
-  const activeMint = nav?.activeMint ?? trending[0]?.mint ?? "";
-  const token = trending.find((t) => t.mint === activeMint) ?? trending[0];
+function resolveToken(
+  activeMint: string,
+  trending: Token[],
+  seedToken: Token,
+  override?: Token,
+): Token | null {
+  return (
+    trending.find((t) => t.mint === activeMint) ??
+    override ??
+    (seedToken.mint === activeMint ? seedToken : null)
+  );
+}
 
-  if (!token) return null;
+function TradeTerminalShell({
+  seedToken,
+  trending,
+  leaderboard,
+  leaderboardPeriod,
+}: {
+  seedToken: Token;
+  trending: Token[];
+  leaderboard: LeaderboardEntry[];
+  leaderboardPeriod: Period;
+}) {
+  const nav = useTradeMintNav();
+  const activeMint = nav?.activeMint ?? seedToken.mint;
+  const token = resolveToken(
+    activeMint,
+    trending,
+    seedToken,
+    nav?.getKnownToken(activeMint),
+  );
+
+  if (!token) {
+    return (
+      <div className="flex flex-1 items-center justify-center p-8 text-center text-sm text-muted-foreground">
+        Could not load this token. Choose one from the trending list.
+      </div>
+    );
+  }
 
   return (
     <>
-      <TokenTicker direction="left" tokens={trending} className="hidden lg:block" />
-      <MobileTrendingStrip tokens={trending} activeMint={token.mint} />
+      <MobileTrendingStrip
+        tokens={trending}
+        activeMint={token.mint}
+      />
 
-      <div
-        className={[
-          "relative grid grid-cols-1",
-          "lg:h-[calc(100dvh-6.6rem)] lg:overflow-hidden",
-          "lg:grid-cols-[minmax(220px,260px)_minmax(0,1fr)_minmax(300px,360px)]",
-          "xl:grid-cols-[280px_minmax(0,1fr)_380px]",
-          "2xl:grid-cols-[300px_minmax(0,1fr)_400px]",
-          "[grid-template-areas:'header'_'sidebar'_'chart'_'activity']",
-          "lg:[grid-template-areas:'trending_header_sidebar'_'trending_chart_sidebar'_'trending_activity_sidebar']",
-        ].join(" ")}
-      >
-        <aside className="hidden min-h-0 w-full min-w-0 flex-col border-r border-white/8 bg-card/20 lg:flex [grid-area:trending] lg:row-span-3">
-          <TrendingList tokens={trending} activeMint={token.mint} />
+      <div className={TRADE_TERMINAL_GRID_CLASS}>
+        <aside className="trade-panel hidden min-h-0 w-full min-w-0 flex-col border-r lg:flex [grid-area:leaderboard] lg:row-span-3">
+          <TradeLeftSidebar
+            tokens={trending}
+            activeMint={token.mint}
+            leaderboard={leaderboard}
+            leaderboardPeriod={leaderboardPeriod}
+          />
         </aside>
 
-        <div className="min-w-0 [grid-area:header]">
+        <div className="trade-panel min-w-0 border-b lg:border-b-0 [grid-area:header]">
           <TokenHeader token={token} />
         </div>
 
-        <aside className="min-h-0 overflow-y-auto border-b border-white/8 bg-card/20 [grid-area:sidebar] lg:row-span-3 lg:border-b-0 lg:border-l">
-          <TradeSidebar key={token.mint} token={token} />
+        <aside className="trade-panel min-h-0 overflow-y-auto border-b lg:row-span-3 lg:border-b-0 lg:border-l [grid-area:sidebar]">
+          <TradeSidebar
+            key={token.mint}
+            token={token}
+          />
         </aside>
 
-        <div className="min-h-[240px] h-[min(42vh,400px)] p-2 sm:min-h-[280px] sm:p-3 lg:min-h-0 lg:h-auto lg:flex-1 [grid-area:chart]">
-          <PriceChart key={token.mint} token={token} />
+        <div className="trade-panel flex min-h-[270px] h-[min(47vh,460px)] flex-col p-2 sm:min-h-[310px] sm:p-3 lg:min-h-0 lg:h-full lg:border-r [grid-area:chart]">
+          <PriceChart
+            key={token.mint}
+            token={token}
+          />
         </div>
 
-        <div className="min-h-[260px] h-[min(38vh,360px)] border-t border-white/8 bg-card/20 sm:min-h-[280px] lg:min-h-[220px] lg:h-auto [grid-area:activity]">
-          <ActivityPanel key={token.mint} token={token} />
+        <div className="trade-panel min-h-[250px] h-[min(36vh,350px)] sm:min-h-[270px] lg:min-h-0 lg:h-full [grid-area:activity]">
+          <ActivityPanel
+            key={token.mint}
+            token={token}
+          />
         </div>
       </div>
     </>

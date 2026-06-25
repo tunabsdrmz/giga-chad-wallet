@@ -1,10 +1,10 @@
 # ChadWallet — Web demo
 
-A Next.js + Tailwind demo of the ChadWallet experience: a memecoin-themed
-landing page, a Solana-style trading UI, and a PnL leaderboard. Sign-in uses
-Privy (Google + email OTP). Optional Supabase persistence powers profiles,
-watchlists, positions, and leaderboard data. Market data comes from BirdEye;
-on-chain SOL balances use Alchemy Devnet RPC.
+A Next.js + Tailwind demo of the ChadWallet experience: a fomo-inspired
+landing page and a Solana-style trading terminal. Sign-in uses Privy (Google +
+email OTP). Optional Supabase persistence powers profiles, watchlists,
+positions, and leaderboard data (shown in the trade sidebar). Market data
+comes from BirdEye; on-chain SOL balances use Alchemy Devnet RPC.
 
 **Live demo:** [giga-chad-wallet.vercel.app](https://giga-chad-wallet.vercel.app/)
 
@@ -12,9 +12,11 @@ on-chain SOL balances use Alchemy Devnet RPC.
 
 | Area | Route | Notes |
 | --- | --- | --- |
-| Landing | `/` | Hero, features, cross-device promo, rotating token ticker |
-| Trade | `/trade`, `/trade/[mint]` | Trending list, chart, trades/holders feeds, buy/sell panel |
-| Leaderboard | `/leaderboard` | 24h / 7d / 30d / all-time rankings |
+| Landing | `/` | Space hero, promo video, token tickers, features, cross-device, CTA |
+| Trade | `/trade`, `/trade/[mint]` | 3-column terminal: trending + leaderboard tabs, chart, trades/holders, buy/sell panel |
+
+There is **no standalone leaderboard page** — rankings live in the trade
+left sidebar (Leaderboard tab with 24h / 7d / 30d / all-time switcher).
 
 **Auth (Privy)** — Google and email OTP. A Solana devnet wallet is created
 automatically on sign-in. Apple Sign-In is not enabled in this demo.
@@ -34,6 +36,7 @@ Alchemy when configured, otherwise the public Devnet RPC.
 
 - Next.js 16 (App Router) + React 19
 - Tailwind CSS v4 + shadcn/ui
+- Plus Jakarta Sans (site-wide) + Geist Mono (feature eyebrows)
 - Privy (`@privy-io/react-auth`) — auth + embedded Solana wallets
 - Supabase (`@supabase/supabase-js`) — optional persistence
 - BirdEye Data Services — token market data (server-only)
@@ -87,7 +90,8 @@ Restart `pnpm dev` after editing `.env.local`.
    in chronological order:
    - `20260622000001_init.sql` — `users`, `watchlist_items`, `positions`,
      `leaderboard_entries`, plus permissive RLS policies
-   - `20260622000002_seed_leaderboard.sql` — seeds the 30-day leaderboard
+   - `20260622000002_seed_leaderboard.sql` — seeds leaderboard rows for the
+     trade sidebar period switcher
 4. Restart `pnpm dev`. Signing in with Privy upserts a row in `public.users`.
    Watchlist items and trade positions write through to Supabase.
 
@@ -95,10 +99,10 @@ Restart `pnpm dev` after editing `.env.local`.
 
 | Table | Hook / entry point | Behaviour |
 | --- | --- | --- |
-| `users` | `useSyncedUser` | Upsert on Privy sign-in (DID + wallet address) |
+| `users` | `SyncedUserProvider` | Upsert on Privy sign-in (DID + wallet address) |
 | `watchlist_items` | `useWatchlist` | Merge localStorage with Supabase when signed in |
 | `positions` | `usePosition` | Buy/sell panel + position card read/write per user + mint |
-| `leaderboard_entries` | `getLeaderboard` | Read-only; seeded by migration |
+| `leaderboard_entries` | `getLeaderboard` | Read-only; consumed by trade sidebar Leaderboard tab |
 
 ### About auth & RLS
 
@@ -161,7 +165,8 @@ The trade panel simulates spot buys and sells for demo purposes:
   token prices may reflect mainnet market data. This mismatch is intentional
   for the take-home demo.
 
-Trading is gated behind Privy sign-in on `/trade/[mint]`.
+Trading is gated behind Privy sign-in on `/trade/[mint]` when Privy is
+configured.
 
 ## Project layout
 
@@ -169,27 +174,33 @@ Trading is gated behind Privy sign-in on `/trade/[mint]`.
 src/
 ├── app/
 │   ├── page.tsx                 # Landing
-│   ├── leaderboard/page.tsx     # Leaderboard
-│   ├── trade/[mint]/page.tsx    # Trade terminal
+│   ├── not-found.tsx            # 404 (trade-themed shell)
+│   ├── trade/
+│   │   ├── layout.tsx           # TradeShell + trade navbar (shared)
+│   │   ├── page.tsx             # Redirect → top trending mint
+│   │   └── [mint]/
+│   │       ├── page.tsx         # Trade terminal
+│   │       ├── loading.tsx      # TradePageSkeleton
+│   │       └── error.tsx        # Trade route error boundary
 │   └── api/birdeye/             # Server proxies (OHLCV, trades, holders)
 ├── components/
-│   ├── landing/                 # Hero, features, CTA
-│   ├── trade/                   # Chart, panel, position card, feeds
-│   ├── leaderboard/             # Table + period switcher
-│   ├── auth/                    # Sign-in button, wallet menu
-│   └── layout/                  # Navbar, footer, page shell
+│   ├── landing/                 # Hero, features, CTA, landing.css theme
+│   ├── trade/                   # Terminal, chart, panel, sidebar, trade.css
+│   ├── auth/                    # Sign-in button, wallet menu, login CTA
+│   └── layout/                  # Navbar, footer, store badges
 └── lib/
+    ├── fonts.ts                 # Plus Jakarta + Geist Mono (root layout)
     ├── supabase/                # Client + generated types
     ├── solana/                  # RPC helpers, devnet airdrop
     ├── mock/                    # Deterministic fallbacks
     ├── mock-trade.ts            # Buy/sell sizing math
     ├── use-position.ts          # Position read/write
     ├── use-watchlist.ts         # Watchlist sync
-    ├── use-synced-user.ts       # Privy → Supabase profile
+    ├── use-synced-user.ts       # Privy user context
     ├── use-mock-balance.ts      # Demo USDC balance
     ├── use-sol-balance.ts       # On-chain SOL polling
     ├── tokens.ts                # Trending + token overview
-    └── leaderboard.ts           # Leaderboard fetch + fallback
+    └── leaderboard.ts           # Leaderboard fetch + fallback (trade sidebar)
 supabase/migrations/             # SQL schema + seed
 public/brand/                    # Logo, promo video, screenshots
 ```
@@ -215,6 +226,8 @@ BirdEye and Supabase keys stay server-side or in env vars — never commit
 
 - No on-chain swap execution (Jupiter label is cosmetic).
 - No TradingView Advanced Charts widget (`lightweight-charts` instead).
+- Trade navbar search is visual-only (placeholder).
 - Leaderboard data is seeded / read-only — not driven by mock trades.
 - Supabase RLS is permissive; not production-hardened.
 - Apple Sign-In not configured (Google + email only).
+- Landing navbar is desktop-only (≥800px); mobile landing has no header chrome.

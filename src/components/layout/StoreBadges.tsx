@@ -8,21 +8,24 @@ interface StoreBadgesProps {
   size?: "sm" | "md";
   /** Stack vertically on narrow screens (hero / footer CTAs). */
   stackOnMobile?: boolean;
+  variant?: "default" | "glass";
 }
 
 export function StoreBadges({
   className,
   size = "md",
   stackOnMobile = true,
+  variant = "default",
 }: StoreBadgesProps) {
-  const pad = size === "sm" ? "px-3 py-2" : "px-4 py-2.5";
-  const iconSize = size === "sm" ? 18 : 22;
+  const pad = size === "sm" ? "px-3 py-2" : variant === "glass" ? "px-4 py-3" : "px-4 py-2.5";
+  const iconSize = size === "sm" ? 18 : variant === "glass" ? 20 : 22;
   const labelSize = size === "sm" ? "text-xs" : "text-sm";
+  const isGlass = variant === "glass";
 
   return (
     <div
       className={cn(
-        "flex items-stretch gap-3",
+        "flex items-stretch gap-2 sm:gap-3",
         stackOnMobile ? "w-full flex-col xs:flex-row sm:w-auto" : "flex-row flex-wrap",
         className,
       )}
@@ -34,6 +37,7 @@ export function StoreBadges({
         eyebrow="Download on the"
         title="App Store"
         icon={<SiApple size={iconSize} aria-hidden />}
+        glass={isGlass}
       />
       <StoreLink
         href={STORE_LINKS.googlePlay}
@@ -42,6 +46,7 @@ export function StoreBadges({
         eyebrow="Get it on"
         title="Google Play"
         icon={<SiGoogleplay size={iconSize} aria-hidden />}
+        glass={isGlass}
       />
     </div>
   );
@@ -54,6 +59,7 @@ function StoreLink({
   eyebrow,
   title,
   icon,
+  glass,
 }: {
   href: string;
   pad: string;
@@ -61,6 +67,7 @@ function StoreLink({
   eyebrow: string;
   title: string;
   icon: ReactNode;
+  glass?: boolean;
 }) {
   return (
     <a
@@ -68,9 +75,14 @@ function StoreLink({
       target="_blank"
       rel="noopener noreferrer"
       className={cn(
-        "flex min-h-11 flex-1 items-center gap-2.5 rounded-xl border border-white/10 bg-white/5 text-left",
-        "transition-colors hover:border-white/20 hover:bg-white/10",
-        "sm:min-w-[9.5rem] sm:flex-initial",
+        "flex min-h-11 flex-1 items-center gap-2.5 text-left transition-colors",
+        glass
+          ? "landing-store-badge rounded-md border-0 px-4 py-2.5 sm:min-w-[7.5rem] sm:flex-initial"
+          : [
+              "rounded-xl border border-white/10 bg-white/5",
+              "hover:border-white/20 hover:bg-white/10",
+              "sm:min-w-[9.5rem] sm:flex-initial",
+            ],
         pad,
       )}
     >
@@ -78,7 +90,9 @@ function StoreLink({
         {icon}
       </span>
       <span className="leading-tight">
-        <span className="block text-[10px] text-muted-foreground">{eyebrow}</span>
+        {!glass && (
+          <span className="block text-[10px] text-muted-foreground">{eyebrow}</span>
+        )}
         <span className={cn("block font-semibold", labelSize)}>{title}</span>
       </span>
     </a>

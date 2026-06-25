@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useSyncedUser } from "@/lib/use-synced-user";
 import { getSupabase, isSupabaseConfigured } from "@/lib/supabase/client";
 import { type Position } from "@/lib/mock/market";
@@ -36,8 +36,14 @@ export function usePosition(token: Token): PositionState {
 
   const [fetched, setFetched] = useState<RemoteFetch>({ key: null, position: null });
   const [submitting, setSubmitting] = useState(false);
-  const tokenRef = useRef(token);
-  tokenRef.current = token;
+  const [trackedKey, setTrackedKey] = useState(remoteKey);
+
+  if (remoteKey !== trackedKey) {
+    setTrackedKey(remoteKey);
+    if (!useRemote) {
+      setFetched({ key: remoteKey, position: null });
+    }
+  }
 
   useEffect(() => {
     if (!useRemote || !did) return;
@@ -51,18 +57,14 @@ export function usePosition(token: Token): PositionState {
             .from("positions")
             .select("amount, avg_entry_usd")
             .eq("user_did", did)
-            .eq("mint", tokenRef.current.mint)
+            .eq("mint", token.mint)
             .maybeSingle();
           if (error) {
             console.warn("[supabase] position fetch failed", error);
             return null;
           }
           return data
-            ? toPosition(
-                tokenRef.current,
-                data.amount,
-                data.avg_entry_usd,
-              )
+            ? toPosition(token, data.amount, data.avg_entry_usd)
             : null;
         })();
         inflightFetches.set(remoteKey, request);
@@ -86,12 +88,7 @@ export function usePosition(token: Token): PositionState {
     return () => {
       cancelled = true;
     };
-  }, [useRemote, did, token.mint, remoteKey]);
-
-  useEffect(() => {
-    if (useRemote) return;
-    setFetched({ key: remoteKey, position: null });
-  }, [useRemote, remoteKey]);
+  }, [useRemote, did, token, remoteKey]);
 
   const persist = useCallback(
     async (next: Position | null): Promise<boolean> => {
@@ -145,9 +142,9 @@ export function usePosition(token: Token): PositionState {
 
   const openPosition = useCallback(
     async (amount: number, avgPriceUsd: number) => {
-      return persist(toPosition(tokenRef.current, amount, avgPriceUsd));
+      return persist(toPosition(token, amount, avgPriceUsd));
     },
-    [persist],
+    [persist, token],
   );
 
   const loading = fetched.key !== remoteKey;

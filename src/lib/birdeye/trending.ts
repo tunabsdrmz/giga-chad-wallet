@@ -36,7 +36,7 @@ async function loadTrendingPool(): Promise<Token[]> {
 
 /**
  * Cached trending pool — one BirdEye request every ~2 minutes shared
- * across landing, trade, and leaderboard. On 429 during revalidation,
+ * across landing and trade. On 429 during revalidation,
  * returns the last good in-process snapshot instead of throwing.
  */
 const getTrendingPool = unstable_cache(

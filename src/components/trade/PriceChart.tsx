@@ -24,9 +24,9 @@ const TIMEFRAMES: { id: Timeframe; label: string; step: number; count: number }[
   { id: "1w", label: "1w", step: 604800, count: 52 },
 ];
 
-const UP = "#22c55e";
-const DOWN = "#ef4444";
-const LINE = "#22c55e";
+const UP = "#21c95e";
+const DOWN = "#ff622e";
+const LINE = "#21c95e";
 
 export function PriceChart({ token }: { token: Token }) {
   const [timeframe, setTimeframe] = useState<Timeframe>("1h");
@@ -59,7 +59,7 @@ export function PriceChart({ token }: { token: Token }) {
     return () => {
       cancelled = true;
     };
-  }, [token.mint, timeframe]);
+  }, [token, timeframe]);
 
   return (
     <div className="flex h-full w-full flex-col">
@@ -179,8 +179,8 @@ function ChartCanvas({
     } else {
       const series = chart.addSeries(AreaSeries, {
         lineColor: LINE,
-        topColor: "rgba(34,197,94,0.35)",
-        bottomColor: "rgba(34,197,94,0)",
+        topColor: "rgba(33,201,94,0.35)",
+        bottomColor: "rgba(33,201,94,0)",
         lineWidth: 2,
       });
       series.setData(

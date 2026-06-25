@@ -15,7 +15,7 @@ export function ActivityPanel({ token }: { token: Token }) {
       onValueChange={(next) => setTab(String(next))}
       className="flex h-full min-h-0 flex-col gap-0"
     >
-      <div className="flex items-center gap-2 overflow-x-auto border-b border-white/5 px-2 py-2 sm:px-3">
+      <div className="flex items-center gap-2 overflow-x-auto border-b border-[var(--trade-border)] px-2 py-2 sm:px-3">
         <TabsList className="shrink-0">
           <TabsTrigger value="trades">
             <span className="flex items-center gap-1.5">

@@ -21,7 +21,7 @@ export function MobileTrendingStrip({
   if (tokens.length === 0) return null;
 
   return (
-    <div className="border-b border-white/8 bg-card/30 lg:hidden">
+    <div className="trade-panel border-b lg:hidden">
       <div
         className={cn(
           "flex items-center gap-2 overflow-x-auto px-3 py-2.5",
@@ -38,8 +38,8 @@ export function MobileTrendingStrip({
               className={cn(
                 "flex shrink-0 items-center gap-2 rounded-full border px-2.5 py-1.5 text-xs transition-colors",
                 active
-                  ? "border-primary/60 bg-primary/10"
-                  : "border-white/10 bg-white/3 hover:border-white/20 hover:bg-white/6",
+                  ? "border-primary/50 bg-primary/10"
+                  : "trade-ticker-chip hover:border-primary/40",
               )}
             >
               <TokenAvatar

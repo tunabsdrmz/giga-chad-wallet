@@ -60,13 +60,14 @@ export function TradePanel({
       }
       const next = calcBuyPosition(position, usd, token.price);
       if (!next) return;
-      const ok = await openPosition(next.amount, next.avgPrice);
-      if (!ok) {
-        setTradeError("Could not save position. Try again.");
-        return;
-      }
       if (!debit(usd)) {
         setTradeError("Insufficient demo USDC balance.");
+        return;
+      }
+      const ok = await openPosition(next.amount, next.avgPrice);
+      if (!ok) {
+        credit(usd);
+        setTradeError("Could not save position. Try again.");
       }
       return;
     }
@@ -160,9 +161,7 @@ export function TradePanel({
       <Button
         className={cn(
           "mt-4 h-12 w-full text-base font-semibold",
-          isBuy
-            ? "bg-up text-background hover:bg-up/90"
-            : "bg-down text-background hover:bg-down/90",
+          isBuy ? "trade-buy-btn" : "trade-sell-btn",
         )}
         disabled={ctaDisabled}
         onClick={() => {

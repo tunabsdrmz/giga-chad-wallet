@@ -4,6 +4,8 @@ import { TrendingDown, TrendingUp } from "lucide-react";
 import type { Token } from "@/types/token";
 import { Button } from "@/components/ui/button";
 import type { PositionState } from "@/lib/use-position";
+import { useSyncedUser } from "@/lib/use-synced-user";
+import { useMockBalance } from "@/lib/use-mock-balance";
 import { formatPrice, formatCompactUsd, formatAmount, formatPercent } from "@/lib/format";
 import { cn } from "@/lib/utils";
 
@@ -23,6 +25,16 @@ export function PositionCard({
   token: Token;
   position: PositionState;
 }) {
+  const { did } = useSyncedUser();
+  const { credit } = useMockBalance(did);
+
+  const handleClose = async () => {
+    if (!position || position.amount <= 0) return;
+    const proceeds = position.amount * token.price;
+    const ok = await closePosition();
+    if (ok) credit(proceeds);
+  };
+
   if (loading) {
     return (
       <div className="border-t border-white/8 p-4">
@@ -74,7 +86,7 @@ export function PositionCard({
         className="mt-4 h-9 w-full text-xs font-semibold"
         disabled={submitting}
         onClick={() => {
-          void closePosition();
+          void handleClose();
         }}
       >
         {submitting ? "Closing…" : "Close position"}
